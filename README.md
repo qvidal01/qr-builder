@@ -1,29 +1,38 @@
 # QR Builder
 
 [![CI](https://github.com/aiqso/qr-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/aiqso/qr-builder/actions/workflows/ci.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-A production-ready Python package for generating QR codes and embedding them into images. Perfect for marketing materials, product packaging, event flyers, and website integration.
+A production-ready Python package for generating QR codes with multiple artistic styles. Perfect for marketing materials, product packaging, event flyers, and website integration.
 
 ## Features
 
-- **Generate standalone QR codes** with custom colors and sizes
-- **Embed QR codes into images** with flexible positioning (center, corners)
-- **Batch processing** for multiple images at once
-- **REST API** via FastAPI with automatic OpenAPI documentation
-- **CLI interface** for command-line usage
-- **Docker support** for easy deployment
-- **CORS enabled** for web integration
+- **5 QR Code Styles:**
+  - **Basic** - Simple QR codes with custom colors
+  - **With Logo** - Logo/image embedded in QR center
+  - **With Text** - Text/words displayed in QR center
+  - **Artistic** - Image transforms INTO the QR code pattern (colorful)
+  - **QArt** - Halftone/dithered artistic style
+
+- **Multiple Interfaces:**
+  - REST API via FastAPI with OpenAPI documentation
+  - CLI for command-line usage
+  - Web interface with visual builder
+  - WordPress-embeddable widget
+  - Python library for programmatic use
+
+- **Production Ready:**
+  - Docker support
+  - CORS enabled for web integration
+  - Batch processing for multiple images
+  - Quality presets for artistic QR codes
 
 ## Quick Start
 
 ### Installation
 
 ```bash
-# From PyPI (when published)
-pip install qr-builder
-
 # From source
 git clone https://github.com/aiqso/qr-builder.git
 cd qr-builder
@@ -33,56 +42,109 @@ pip install -e ".[dev]"  # Include dev dependencies for testing
 ### CLI Usage
 
 ```bash
-# Generate a standalone QR code
+# Generate a basic QR code
 qr-builder qr "https://example.com" qr.png --size 600
 
-# Embed QR into an image
-qr-builder embed background.jpg "https://example.com" out.png \
-  --scale 0.3 \
-  --position bottom-right \
-  --margin 30
+# QR with logo in center
+qr-builder logo "https://example.com" logo.png output.png --scale 0.25
+
+# QR with text in center
+qr-builder text "https://example.com" "HELLO" output.png --font-color "#e07030"
+
+# Artistic QR (image becomes the QR pattern)
+qr-builder artistic "https://example.com" image.png output.png --preset large
+
+# QArt halftone style
+qr-builder qart "https://example.com" image.png output.png --version 10
+
+# Embed QR into background image
+qr-builder embed background.jpg "https://example.com" output.png \
+  --scale 0.3 --position bottom-right
 
 # Batch embed into all images in a directory
-qr-builder batch-embed ./images "https://example.com" ./output \
-  --glob "*.jpg" \
-  --position center
+qr-builder batch-embed ./images "https://example.com" ./output --glob "*.jpg"
 ```
 
 ### Python Library
 
 ```python
-from qr_builder import generate_qr_only, embed_qr_in_image, generate_qr
-
-# Generate standalone QR
-generate_qr_only("https://example.com", "qr.png", size=500)
-
-# Embed QR into background image
-embed_qr_in_image(
-    "flyer.jpg",
-    "https://example.com/product?id=123",
-    "flyer_output.png",
-    qr_scale=0.3,
-    position="bottom-right",
-    fill_color="navy",
-    back_color="white",
+from qr_builder import (
+    generate_qr_only,
+    generate_qr_with_logo,
+    generate_qr_with_text,
+    generate_artistic_qr,
+    generate_qart,
+    generate_qr_unified,
+    QRConfig,
+    QRStyle,
+    ARTISTIC_PRESETS,
 )
 
-# Get raw PIL Image for further processing
-img = generate_qr("https://example.com", qr_size=400)
+# Basic QR code
+generate_qr_only("https://example.com", "qr.png", size=500)
+
+# QR with logo
+generate_qr_with_logo(
+    "https://example.com",
+    "logo.png",
+    "output.png",
+    logo_scale=0.25,
+)
+
+# QR with text
+generate_qr_with_text(
+    "https://example.com",
+    "HELLO",
+    "output.png",
+    font_color="#e07030",
+)
+
+# Artistic QR with preset
+generate_artistic_qr(
+    "https://example.com",
+    "image.png",
+    "output.png",
+    preset="large",
+    colorized=True,
+)
+
+# Unified interface with configuration
+config = QRConfig(
+    style=QRStyle.ARTISTIC,
+    data="https://example.com",
+    output_path="output.png",
+    source_image="image.png",
+    preset="hd",
+    colorized=True,
+)
+generate_qr_unified(config)
 ```
+
+### Web Interface
+
+Start the visual web interface:
+
+```bash
+python server.py
+# Visit http://localhost:8080
+```
+
+Features:
+- Tab-based interface for all 5 QR styles
+- Live preview
+- Color pickers
+- Preset selection for artistic QR codes
+- Download generated QR codes
 
 ### REST API
 
 Start the API server:
 
 ```bash
-# Using the CLI command
-qr-builder-api
+# Using uvicorn
+uvicorn qr_builder.api:app --reload --port 8000
 
-# Or with uvicorn directly
-uvicorn qr_builder.api:app --reload
-
-# Visit http://127.0.0.1:8000/docs for interactive API docs
+# Visit http://localhost:8000/docs for interactive API docs
 ```
 
 **Endpoints:**
@@ -90,33 +152,45 @@ uvicorn qr_builder.api:app --reload
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Health check |
-| POST | `/qr` | Generate standalone QR code |
-| POST | `/embed` | Embed QR into uploaded image |
-| POST | `/batch/embed` | Batch embed into multiple images (returns ZIP) |
+| GET | `/styles` | List available styles and presets |
+| POST | `/qr` | Generate basic QR code |
+| POST | `/qr/text` | QR with text in center |
+| POST | `/qr/logo` | QR with logo in center |
+| POST | `/qr/artistic` | Artistic QR (image becomes QR) |
+| POST | `/qr/qart` | Halftone/dithered QR |
+| POST | `/embed` | Embed QR into background image |
+| POST | `/batch/embed` | Batch embed (returns ZIP) |
+| POST | `/batch/artistic` | Batch artistic QR (returns ZIP) |
 
-**Example API call:**
+See [docs/API.md](docs/API.md) for complete API documentation.
 
-```bash
-# Generate QR code
-curl -X POST "http://localhost:8000/qr" \
-  -F "data=https://example.com" \
-  -F "size=400" \
-  --output qr.png
+### WordPress Integration
 
-# Embed QR into image
-curl -X POST "http://localhost:8000/embed" \
-  -F "background=@flyer.jpg" \
-  -F "data=https://example.com" \
-  -F "position=bottom-right" \
-  --output result.png
-```
+Embed the QR Builder in any WordPress site:
+
+1. Copy `wordpress/qr-builder-widget.html`
+2. Add to WordPress via Custom HTML block
+3. Update `QR_API_URL` to your server address
+
+See [wordpress/README.md](wordpress/README.md) for detailed instructions.
+
+## Artistic Presets
+
+For artistic QR codes, use presets for optimal quality:
+
+| Preset | Version | Best For |
+|--------|---------|----------|
+| `small` | 5 | Web thumbnails, social media |
+| `medium` | 10 | General use, business cards |
+| `large` | 15 | Print, marketing materials |
+| `hd` | 20 | Large format, high detail |
 
 ## Docker Deployment
 
 ```bash
 # Build and run
-docker build -t qr-builder-api .
-docker run -p 8000:8000 qr-builder-api
+docker build -t qr-builder .
+docker run -p 8080:8080 qr-builder python server.py
 
 # Or with Docker Compose
 docker compose up --build
@@ -126,76 +200,51 @@ docker compose up --build
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `QR_BUILDER_HOST` | `0.0.0.0` | API host binding |
-| `QR_BUILDER_PORT` | `8000` | API port |
-| `QR_BUILDER_RELOAD` | `true` | Enable hot reload |
-
-## Configuration Options
-
-### QR Code Parameters
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `size` | 500 | QR code size in pixels (21-4000) |
-| `fill_color` | black | Foreground color (name or hex) |
-| `back_color` | white | Background color (name or hex) |
-
-### Embedding Parameters
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `scale` | 0.3 | QR size as fraction of image width (0-1) |
-| `position` | center | Placement: `center`, `top-left`, `top-right`, `bottom-left`, `bottom-right` |
-| `margin` | 20 | Edge spacing in pixels |
-
-## Development
-
-```bash
-# Install with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Run tests with coverage
-pytest --cov=qr_builder
-
-# Lint code
-ruff check qr_builder/
-
-# Type checking
-mypy qr_builder/
-```
+| `QR_SERVER_HOST` | `0.0.0.0` | Server host binding |
+| `QR_SERVER_PORT` | `8080` | Server port |
 
 ## Project Structure
 
 ```
 qr-builder/
 ├── qr_builder/
-│   ├── __init__.py    # Package exports
-│   ├── core.py        # Core QR generation logic
-│   ├── cli.py         # Command-line interface
-│   └── api.py         # FastAPI REST API
+│   ├── __init__.py      # Package exports
+│   ├── core.py          # Core QR generation (5 styles)
+│   ├── cli.py           # Command-line interface
+│   └── api.py           # FastAPI REST API
+├── server.py            # Web interface server
+├── wordpress/
+│   ├── qr-builder-widget.html  # WordPress embed widget
+│   └── README.md               # WordPress integration guide
+├── docs/
+│   └── API.md           # API documentation
 ├── tests/
-│   ├── test_core.py   # Core function tests
-│   └── test_api.py    # API endpoint tests
+│   ├── test_core.py     # Core function tests
+│   └── test_api.py      # API endpoint tests
 ├── .github/
 │   └── workflows/
-│       └── ci.yml     # GitHub Actions CI
-├── pyproject.toml     # Package configuration
-├── Dockerfile         # Docker image
-├── docker-compose.yml # Docker Compose config
+│       └── ci.yml       # GitHub Actions CI
+├── pyproject.toml       # Package configuration
+├── Dockerfile           # Docker image
+├── docker-compose.yml   # Docker Compose config
 └── README.md
 ```
 
 ## Use Cases
 
-- **Marketing flyers** - Add QR codes to promotional materials
-- **Product packaging** - Link to product pages or manuals
-- **Event tickets** - Embed registration/check-in links
-- **Business cards** - Link to contact info or portfolios
-- **Restaurant menus** - Link to online menus or ordering
+- **Marketing materials** - Branded QR codes with company images
+- **Product packaging** - Artistic QR codes that match design
+- **Event tickets** - Visually appealing check-in codes
+- **Business cards** - QR codes with logos or text
+- **Restaurant menus** - Stylish codes for online ordering
+- **Social media** - Eye-catching QR codes for profiles
 - **Website widgets** - Generate QR codes dynamically via API
+- **WordPress sites** - Embeddable QR generator for visitors
+
+## Requirements
+
+- Python 3.9+
+- Dependencies: qrcode, Pillow, amzqr, pyqart, segno, fastapi, uvicorn
 
 ## License
 
@@ -210,3 +259,8 @@ Contributions are welcome! Please open an issue or submit a pull request.
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+## Support
+
+- **GitHub Issues:** https://github.com/AIQSO/qr-builder/issues
+- **Documentation:** https://github.com/AIQSO/qr-builder

@@ -448,6 +448,12 @@ async def home():
     return HTML_TEMPLATE
 
 
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {"status": "ok"}
+
+
 @app.post("/generate/basic")
 async def generate_basic(
     data: str = Form(...),

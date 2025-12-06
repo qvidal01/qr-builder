@@ -1,0 +1,461 @@
+<!--
+QR Builder Widget for WordPress
+================================
+This is a self-contained, embeddable QR code generator widget.
+
+INSTALLATION:
+1. Copy this entire file content
+2. In WordPress, add a "Custom HTML" block or use a page builder
+3. Paste the code
+4. Update QR_API_URL to point to your QR Builder server
+
+REQUIREMENTS:
+- QR Builder server running (server.py)
+- CORS enabled on the server (already configured)
+
+CUSTOMIZATION:
+- Change colors in the :root CSS variables
+- Modify QR_API_URL to your server address
+-->
+
+<div id="qr-builder-widget">
+    <style>
+        #qr-builder-widget {
+            --qr-primary: #1a3a5c;
+            --qr-secondary: #e07030;
+            --qr-bg: #f8fafc;
+            --qr-card: #ffffff;
+            --qr-text: #333333;
+            --qr-border: #e0e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #qr-builder-widget * {
+            box-sizing: border-box;
+        }
+        .qrb-card {
+            background: var(--qr-card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--qr-border);
+        }
+        .qrb-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--qr-primary);
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+        .qrb-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .qrb-tab {
+            padding: 10px 16px;
+            border: 2px solid var(--qr-border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: var(--qr-bg);
+            color: var(--qr-primary);
+        }
+        .qrb-tab:hover {
+            border-color: var(--qr-primary);
+        }
+        .qrb-tab.active {
+            background: var(--qr-primary);
+            border-color: var(--qr-primary);
+            color: white;
+        }
+        .qrb-form {
+            display: none;
+        }
+        .qrb-form.active {
+            display: block;
+        }
+        .qrb-group {
+            margin-bottom: 16px;
+        }
+        .qrb-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--qr-text);
+        }
+        .qrb-input, .qrb-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--qr-border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        .qrb-input:focus, .qrb-select:focus {
+            outline: none;
+            border-color: var(--qr-primary);
+        }
+        .qrb-file {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed var(--qr-border);
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--qr-bg);
+        }
+        .qrb-file:hover {
+            border-color: var(--qr-primary);
+        }
+        .qrb-row {
+            display: flex;
+            gap: 12px;
+        }
+        .qrb-row .qrb-group {
+            flex: 1;
+        }
+        .qrb-color-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .qrb-color-picker {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .qrb-color-wrap .qrb-input {
+            flex: 1;
+        }
+        .qrb-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .qrb-btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--qr-secondary) 0%, #c05020 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .qrb-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(224, 112, 48, 0.4);
+        }
+        .qrb-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .qrb-loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: #666;
+        }
+        .qrb-loading.show {
+            display: block;
+        }
+        .qrb-result {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--qr-border);
+        }
+        .qrb-result.show {
+            display: block;
+        }
+        .qrb-result img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .qrb-download {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 20px;
+            background: var(--qr-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .qrb-download:hover {
+            background: #2d5a87;
+        }
+        .qrb-error {
+            display: none;
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .qrb-error.show {
+            display: block;
+        }
+        @media (max-width: 480px) {
+            .qrb-row {
+                flex-direction: column;
+            }
+            .qrb-tabs {
+                justify-content: center;
+            }
+            .qrb-tab {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+
+    <div class="qrb-card">
+        <h2 class="qrb-title">QR Code Generator</h2>
+
+        <div class="qrb-tabs">
+            <button class="qrb-tab active" data-tab="basic">Basic</button>
+            <button class="qrb-tab" data-tab="text">With Text</button>
+            <button class="qrb-tab" data-tab="logo">With Logo</button>
+            <button class="qrb-tab" data-tab="artistic">Artistic</button>
+        </div>
+
+        <!-- Basic Form -->
+        <form class="qrb-form active" id="qrb-form-basic">
+            <div class="qrb-group">
+                <label class="qrb-label">URL or Text</label>
+                <input type="url" class="qrb-input" name="data" placeholder="https://example.com" required>
+            </div>
+            <div class="qrb-row">
+                <div class="qrb-group">
+                    <label class="qrb-label">Size</label>
+                    <select class="qrb-select" name="size">
+                        <option value="300">Small (300px)</option>
+                        <option value="500" selected>Medium (500px)</option>
+                        <option value="800">Large (800px)</option>
+                    </select>
+                </div>
+                <div class="qrb-group">
+                    <label class="qrb-label">Color</label>
+                    <div class="qrb-color-wrap">
+                        <input type="color" class="qrb-color-picker" value="#000000">
+                        <input type="text" class="qrb-input" name="fill_color" value="black">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="qrb-btn">Generate QR Code</button>
+        </form>
+
+        <!-- Text Form -->
+        <form class="qrb-form" id="qrb-form-text">
+            <div class="qrb-group">
+                <label class="qrb-label">URL or Text</label>
+                <input type="url" class="qrb-input" name="data" placeholder="https://example.com" required>
+            </div>
+            <div class="qrb-group">
+                <label class="qrb-label">Center Text</label>
+                <input type="text" class="qrb-input" name="text" placeholder="YOUR TEXT" required>
+                <p class="qrb-hint">Text displayed in the center of the QR code</p>
+            </div>
+            <div class="qrb-row">
+                <div class="qrb-group">
+                    <label class="qrb-label">Size</label>
+                    <select class="qrb-select" name="size">
+                        <option value="300">Small</option>
+                        <option value="500" selected>Medium</option>
+                        <option value="800">Large</option>
+                    </select>
+                </div>
+                <div class="qrb-group">
+                    <label class="qrb-label">Text Color</label>
+                    <div class="qrb-color-wrap">
+                        <input type="color" class="qrb-color-picker" value="#1a3a5c">
+                        <input type="text" class="qrb-input" name="font_color" value="#1a3a5c">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="qrb-btn">Generate QR Code</button>
+        </form>
+
+        <!-- Logo Form -->
+        <form class="qrb-form" id="qrb-form-logo">
+            <div class="qrb-group">
+                <label class="qrb-label">URL or Text</label>
+                <input type="url" class="qrb-input" name="data" placeholder="https://example.com" required>
+            </div>
+            <div class="qrb-group">
+                <label class="qrb-label">Logo Image</label>
+                <input type="file" class="qrb-file" name="logo" accept="image/*" required>
+                <p class="qrb-hint">PNG or JPG, will be centered in the QR code</p>
+            </div>
+            <div class="qrb-row">
+                <div class="qrb-group">
+                    <label class="qrb-label">Size</label>
+                    <select class="qrb-select" name="size">
+                        <option value="400">Small</option>
+                        <option value="500" selected>Medium</option>
+                        <option value="700">Large</option>
+                    </select>
+                </div>
+                <div class="qrb-group">
+                    <label class="qrb-label">Logo Size</label>
+                    <select class="qrb-select" name="logo_scale">
+                        <option value="0.2">Small (20%)</option>
+                        <option value="0.25" selected>Medium (25%)</option>
+                        <option value="0.3">Large (30%)</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="qrb-btn">Generate QR Code</button>
+        </form>
+
+        <!-- Artistic Form -->
+        <form class="qrb-form" id="qrb-form-artistic">
+            <div class="qrb-group">
+                <label class="qrb-label">URL or Text</label>
+                <input type="url" class="qrb-input" name="data" placeholder="https://example.com" required>
+            </div>
+            <div class="qrb-group">
+                <label class="qrb-label">Image</label>
+                <input type="file" class="qrb-file" name="image" accept="image/*" required>
+                <p class="qrb-hint">This image will become the QR code pattern</p>
+            </div>
+            <div class="qrb-row">
+                <div class="qrb-group">
+                    <label class="qrb-label">Quality</label>
+                    <select class="qrb-select" name="preset">
+                        <option value="small">Small - Fast</option>
+                        <option value="medium">Medium</option>
+                        <option value="large" selected>Large - Best</option>
+                        <option value="hd">HD - Maximum</option>
+                    </select>
+                </div>
+                <div class="qrb-group">
+                    <label class="qrb-label">Color Mode</label>
+                    <select class="qrb-select" name="colorized">
+                        <option value="true" selected>Full Color</option>
+                        <option value="false">Black & White</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="qrb-btn">Generate Artistic QR</button>
+        </form>
+
+        <div class="qrb-loading">Generating your QR code...</div>
+        <div class="qrb-error"></div>
+
+        <div class="qrb-result">
+            <img id="qrb-result-img" src="" alt="Generated QR Code">
+            <br>
+            <a id="qrb-download" class="qrb-download" href="" download="qr-code.png">Download QR Code</a>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        // ========================================
+        // CONFIGURATION - Update this URL!
+        // ========================================
+        const QR_API_URL = 'http://localhost:8080';
+        // For production, change to your server:
+        // const QR_API_URL = 'https://qr.yourdomain.com';
+        // ========================================
+
+        const widget = document.getElementById('qr-builder-widget');
+        const tabs = widget.querySelectorAll('.qrb-tab');
+        const forms = widget.querySelectorAll('.qrb-form');
+        const loading = widget.querySelector('.qrb-loading');
+        const result = widget.querySelector('.qrb-result');
+        const error = widget.querySelector('.qrb-error');
+        const resultImg = widget.querySelector('#qrb-result-img');
+        const downloadLink = widget.querySelector('#qrb-download');
+
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                forms.forEach(f => f.classList.remove('active'));
+                tab.classList.add('active');
+                widget.querySelector('#qrb-form-' + tab.dataset.tab).classList.add('active');
+                result.classList.remove('show');
+                error.classList.remove('show');
+            });
+        });
+
+        // Color picker sync
+        widget.querySelectorAll('.qrb-color-picker').forEach(picker => {
+            const textInput = picker.nextElementSibling;
+            picker.addEventListener('input', () => textInput.value = picker.value);
+            textInput.addEventListener('input', () => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                    picker.value = textInput.value;
+                }
+            });
+        });
+
+        // Form submission
+        forms.forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const tabId = form.id.replace('qrb-form-', '');
+                const btn = form.querySelector('.qrb-btn');
+
+                btn.disabled = true;
+                loading.classList.add('show');
+                result.classList.remove('show');
+                error.classList.remove('show');
+
+                try {
+                    const response = await fetch(QR_API_URL + '/generate/' + tabId, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        let errMsg = 'Failed to generate QR code';
+                        try {
+                            const errData = await response.json();
+                            errMsg = errData.detail || errMsg;
+                        } catch {}
+                        throw new Error(errMsg);
+                    }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+
+                    resultImg.src = url;
+                    downloadLink.href = url;
+                    result.classList.add('show');
+                } catch (err) {
+                    error.textContent = 'Error: ' + err.message;
+                    error.classList.add('show');
+                } finally {
+                    btn.disabled = false;
+                    loading.classList.remove('show');
+                }
+            });
+        });
+    })();
+    </script>
+</div>
