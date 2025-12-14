@@ -1,10 +1,14 @@
 """Tests for qr_builder.api module."""
 
+import os
 import pytest
-from fastapi.testclient import TestClient
 from PIL import Image
 import io
 
+# Disable authentication for tests
+os.environ["QR_BUILDER_AUTH_ENABLED"] = "false"
+
+from fastapi.testclient import TestClient
 from qr_builder.api import app
 
 
@@ -20,7 +24,9 @@ class TestHealthEndpoint:
     def test_health_returns_ok(self, client):
         response = client.get("/health")
         assert response.status_code == 200
-        assert response.json() == {"status": "ok"}
+        data = response.json()
+        assert data["status"] == "ok"
+        assert "auth_enabled" in data
 
 
 class TestQREndpoint:

@@ -24,7 +24,16 @@ from .core import (
     VALID_POSITIONS,
 )
 
-__version__ = "0.2.0"
+from .auth import (
+    UserTier,
+    TierLimits,
+    UserSession,
+    TIER_LIMITS,
+    get_all_tiers_info,
+    get_tier_info,
+)
+
+__version__ = "0.3.0"
 
 __all__ = [
     # Basic functions
@@ -45,6 +54,13 @@ __all__ = [
     "QRConfig",
     "QRStyle",
     "ARTISTIC_PRESETS",
+    # Auth & Tiers
+    "UserTier",
+    "TierLimits",
+    "UserSession",
+    "TIER_LIMITS",
+    "get_all_tiers_info",
+    "get_tier_info",
     # Constants
     "MAX_DATA_LENGTH",
     "MAX_QR_SIZE",
