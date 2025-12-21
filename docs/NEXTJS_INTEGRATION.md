@@ -1,12 +1,12 @@
-# Next.js Integration Guide for aiqso.io
+# Next.js Integration Guide for your-domain.com
 
-This guide explains how to integrate the QR Builder API with your Next.js website at aiqso.io.
+This guide explains how to integrate the QR Builder API with your Next.js website at your-domain.com.
 
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        aiqso.io (Next.js)                       │
+│                        your-domain.com (Next.js)                       │
 ├─────────────────────────────────────────────────────────────────┤
 │  Frontend (React)          │  Backend (API Routes)              │
 │  - QR Builder UI           │  - /api/qr-builder/validate-key    │
@@ -32,8 +32,8 @@ Set these in your QR Builder API deployment:
 # Required for production
 QR_BUILDER_AUTH_ENABLED=true
 QR_BUILDER_BACKEND_SECRET=your-secure-secret-here
-QR_BUILDER_BACKEND_URL=https://api.aiqso.io
-QR_BUILDER_ALLOWED_ORIGINS=https://aiqso.io,https://www.aiqso.io
+QR_BUILDER_BACKEND_URL=https://api.your-domain.com
+QR_BUILDER_ALLOWED_ORIGINS=https://your-domain.com,https://www.your-domain.com
 
 # Optional
 QR_BUILDER_HOST=0.0.0.0
@@ -132,7 +132,7 @@ async function onUserSubscribe(userId: string, tier: 'free' | 'pro' | 'business'
 
 import { useState } from 'react';
 
-const QR_BUILDER_API = process.env.NEXT_PUBLIC_QR_BUILDER_API || 'https://qr-api.aiqso.io';
+const QR_BUILDER_API = process.env.NEXT_PUBLIC_QR_BUILDER_API || 'https://qr-api.your-domain.com';
 
 interface QRBuilderProps {
   apiKey: string;

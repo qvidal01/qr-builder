@@ -44,7 +44,7 @@ class SecurityConfig:
     """Security-related configuration."""
     auth_enabled: bool = True
     backend_secret: str = field(default_factory=lambda: secrets.token_urlsafe(32))
-    backend_url: str = "https://api.aiqso.io"
+    backend_url: str = "https://your-backend.example.com"
     allowed_origins: list[str] = field(default_factory=list)
 
     # File upload limits
@@ -106,7 +106,7 @@ class AppConfig:
             backend_secret = "dev-secret-not-for-production"
 
         allowed_origins_default = (
-            "https://aiqso.io,https://www.aiqso.io,https://api.aiqso.io"
+            "https://your-domain.example.com,https://www.aiqso.io,https://your-backend.example.com"
             if is_production
             else "*"
         )
@@ -114,7 +114,7 @@ class AppConfig:
         security = SecurityConfig(
             auth_enabled=_parse_bool(os.getenv("QR_BUILDER_AUTH_ENABLED", "true" if is_production else "false")),
             backend_secret=backend_secret,
-            backend_url=os.getenv("QR_BUILDER_BACKEND_URL", "https://api.aiqso.io"),
+            backend_url=os.getenv("QR_BUILDER_BACKEND_URL", "https://your-backend.example.com"),
             allowed_origins=_parse_list(os.getenv("QR_BUILDER_ALLOWED_ORIGINS", allowed_origins_default)),
             max_upload_size_mb=int(os.getenv("QR_BUILDER_MAX_UPLOAD_MB", "10")),
         )

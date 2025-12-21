@@ -44,7 +44,7 @@ Before installing the widget, you need:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/AIQSO/qr-builder.git
+git clone https://github.com/Your Organization/qr-builder.git
 cd qr-builder
 
 # 2. Create virtual environment
@@ -327,8 +327,8 @@ The widget uses these server endpoints:
 
 ## Support
 
-- **GitHub Issues:** https://github.com/AIQSO/qr-builder/issues
-- **Documentation:** https://github.com/AIQSO/qr-builder
+- **GitHub Issues:** https://github.com/Your Organization/qr-builder/issues
+- **Documentation:** https://github.com/Your Organization/qr-builder
 
 ---
 

@@ -262,5 +262,5 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 ## Support
 
-- **GitHub Issues:** https://github.com/AIQSO/qr-builder/issues
-- **Documentation:** https://github.com/AIQSO/qr-builder
+- **GitHub Issues:** https://github.com/Your Organization/qr-builder/issues
+- **Documentation:** https://github.com/Your Organization/qr-builder

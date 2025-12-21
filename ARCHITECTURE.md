@@ -124,7 +124,7 @@ The system supports five distinct QR code styles:
 ```
 ┌───────────┐      ┌───────────┐      ┌───────────┐      ┌───────────┐
 │  Client   │──────│  API      │──────│  Auth     │──────│  Backend  │
-│           │      │  Gateway  │      │  Module   │      │  (aiqso)  │
+│           │      │  Gateway  │      │  Module   │      │  (your-org)  │
 └───────────┘      └───────────┘      └───────────┘      └───────────┘
       │                  │                  │                  │
       │  Request + Key   │                  │                  │

@@ -54,7 +54,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Builder - AIQSO</title>
+    <title>QR Builder</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -253,7 +253,7 @@ HTML_TEMPLATE = """
                 </div>
                 <div class="form-group">
                     <label>Text to Display in Center</label>
-                    <input type="text" name="text" placeholder="AIQSO" required>
+                    <input type="text" name="text" placeholder="YOUR TEXT" required>
                     <p class="description">This text appears in the center of the QR code</p>
                 </div>
                 <div class="row">
@@ -372,8 +372,8 @@ HTML_TEMPLATE = """
         </div>
 
         <footer>
-            Powered by <a href="https://github.com/AIQSO/qr-builder">QR Builder</a> |
-            <a href="https://aiqso.io">AIQSO</a>
+            Powered by <a href="https://github.com/qvidal01/qr-builder">QR Builder</a> |
+            Your Company
         </footer>
     </div>
 

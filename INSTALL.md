@@ -32,7 +32,7 @@ This guide covers various methods to install and run QR Builder.
 
 ```bash
 # Clone the repository
-git clone https://github.com/AIQSO/qr-builder.git
+git clone https://github.com/Your Organization/qr-builder.git
 cd qr-builder
 
 # Create and activate virtual environment
@@ -56,7 +56,7 @@ This is the recommended method for development and testing.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/AIQSO/qr-builder.git
+git clone https://github.com/Your Organization/qr-builder.git
 cd qr-builder
 
 # 2. Create a virtual environment
@@ -320,7 +320,7 @@ uvicorn qr_builder.api:app --port 8001
 
 ### Getting Help
 
-- **GitHub Issues:** https://github.com/AIQSO/qr-builder/issues
+- **GitHub Issues:** https://github.com/Your Organization/qr-builder/issues
 - **Documentation:** See `README.md` and `docs/API.md`
 - **Architecture:** See `ARCHITECTURE.md`
 
